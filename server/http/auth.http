@@ -1,0 +1,18 @@
+@BASE_URL = http://localhost:3500
+
+### register
+POST {{BASE_URL}}/auth/register
+Content-Type: application/json
+
+{
+  "firstName": "String",
+  "lastName" : "String",
+  "imageUrl" :  "String?",
+  "birthDate": "1992-06-15",
+  "gender"   : "MALE",
+  //"email": "hello@mail.com"
+  "email": "string"
+}
+
+### check
+POST  {{BASE_URL}}/auth/login
