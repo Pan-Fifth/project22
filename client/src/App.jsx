@@ -1,14 +1,12 @@
-import "./App.css";
-import { useEffect } from "react";
-import { io } from "socket.io-client";
-
+import ChatBox from "./components/ChatBox";
 function App() {
-  const socket = io("http://localhost:3500");
-
-  useEffect(() => {
-    socket.emit("hello", "world");
-  });
-  return <>socket test</>;
+  return (
+    <>
+      <div className="mx-auto w-[80%]">
+        <ChatBox />
+      </div>
+    </>
+  );
 }
 
 export default App;
