@@ -1,41 +1,77 @@
-import { useState } from "react";
-import { useRef } from "react";
-import { useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { io } from "socket.io-client";
+import { useParams } from "react-router";
 
 function ChatBox() {
-  const [messages, setMessages] = useState([
-    { id: 1, text: "สวัสดี 👋", sender: "other" },
-    { id: 2, text: "ว่าไง!", sender: "me" },
-    { id: 3, text: "ทำอะไรอยู่?", sender: "other" },
-  ]);
+  const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const chatEndRef = useRef(null);
+  const socketRef = useRef(null);
+  const { room } = useParams();
 
   useEffect(() => {
-    const socket = io("http://localhost:3500");
-    socket.on("connect", () => {
-      console.log(socket.id);
+    const token = localStorage.getItem("token");
+
+    // ✅ สร้าง socket แค่ครั้งเดียว
+    socketRef.current = io("http://localhost:3500", {
+      auth: { token },
     });
 
-    socket.on("message", (msg) => {
-      console.log("other", msg);
+    socketRef.current.on("connect", () => {
+      console.log("connected:", socketRef.current.id);
+    });
+
+    // ✅ join room
+    socketRef.current.emit("join", { roomId: room });
+
+    // ✅ รับข้อความ
+    socketRef.current.on("message", (msg) => {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now(),
+          text: msg.text,
+          sender: msg.sender === socketRef.current.id ? "me" : "other",
+        },
+      ]);
     });
 
     return () => {
-      socket.disconnect();
+      socketRef.current.disconnect();
     };
-  }, []);
+  }, [room]);
+
+  // ✅ auto scroll
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   const sendMessage = () => {
-    socket.emit("message", "hello");
+    if (!input.trim()) return;
+
+    const msgData = {
+      roomId: room,
+      text: input,
+      sender: socketRef.current.id,
+    };
+
+    // ✅ ส่งไป server
+    socketRef.current.emit("message", msgData);
+
+    // ✅ เพิ่มในฝั่งตัวเอง
+    setMessages((prev) => [
+      ...prev,
+      { id: Date.now(), text: input, sender: "me" },
+    ]);
+
+    setInput("");
   };
 
   return (
     <div className="flex flex-col h-screen bg-gray-100">
       {/* Header */}
       <div className="p-4 bg-green-500 text-white font-semibold shadow">
-        Chat
+        Chat Room: {room}
       </div>
 
       {/* Chat Area */}
@@ -45,7 +81,6 @@ function ChatBox() {
             key={msg.id}
             className={`chat ${msg.sender === "me" ? "chat-end" : "chat-start"}`}
           >
-            {/* avatar optional */}
             {msg.sender === "other" && (
               <div className="chat-image avatar">
                 <div className="w-8 rounded-full">
@@ -53,9 +88,11 @@ function ChatBox() {
                 </div>
               </div>
             )}
+
             <div
-              className={`chat-bubble ${msg.sender === "me" ? "chat-bubble-primary" : ""
-                }`}
+              className={`chat-bubble ${
+                msg.sender === "me" ? "chat-bubble-primary" : ""
+              }`}
             >
               {msg.text}
             </div>
@@ -72,7 +109,9 @@ function ChatBox() {
           className="input input-bordered flex-1 rounded-full"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyDown={() => { }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") sendMessage();
+          }}
         />
         <button
           onClick={sendMessage}
@@ -84,4 +123,5 @@ function ChatBox() {
     </div>
   );
 }
+
 export default ChatBox;

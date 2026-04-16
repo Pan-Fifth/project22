@@ -1,7 +1,7 @@
 export default function (io, socket, data) {
-    const { roomId } = data;
+  const { roomId } = data;
 
-    socket.join(roomId);
+  socket.join(roomId);
 
-    console.log(`${socket.id} joined ${roomId}`);
+  console.log(`${socket.id} joined ${roomId} who ${socket.user.firstName}`);
 }
