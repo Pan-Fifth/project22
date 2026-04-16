@@ -1,10 +1,9 @@
-import ChatBox from "./components/ChatBox";
+import { RouterProvider } from "react-router";
+import router from "./routes/user.route";
 function App() {
   return (
     <>
-      <div className="mx-auto w-[80%]">
-        <ChatBox />
-      </div>
+      <RouterProvider router={router} />
     </>
   );
 }

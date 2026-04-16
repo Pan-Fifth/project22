@@ -5,36 +5,27 @@ import authRoute from "./routes/auth.route.js";
 import errHandle from "./middlewares/errHandle.js";
 import notFound from "./middlewares/notFound.js";
 import { createServer } from "node:http";
-import { Server } from "socket.io";
+import inintSocket from "./sockets/index.js";
+
 
 const PORT = process.env.PORT || 3000;
 const app = express();
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+  origin: "http://localhost:5173",
+  credentials: true,
+}));
 
 const server = createServer(app);
 
-const io = new Server(server, {
-  cors: { origin: "*" },
-});
-
 app.use("/auth", authRoute);
+
+
+inintSocket(server)
 
 app.use(notFound);
 app.use(errHandle);
 
-io.on("connection", (socket) => {
-  console.log("a user connected", socket.id);
-  socket.on("disconnect", () => {
-    console.log(`${socket.id} is disconnected`);
-  });
-  socket.on("message", (msg) => {
-    io.emit("message", {
-      text: msg,
-      userId: socket.id,
-    });
-  });
-});
 
 server.listen(PORT, () => {
   console.log(`server is running on port ${PORT}`);

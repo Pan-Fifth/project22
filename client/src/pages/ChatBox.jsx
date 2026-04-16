@@ -9,7 +9,6 @@ function ChatBox() {
     { id: 2, text: "ว่าไง!", sender: "me" },
     { id: 3, text: "ทำอะไรอยู่?", sender: "other" },
   ]);
-  const socket = io("http://localhost:3500");
   const [input, setInput] = useState("");
   const chatEndRef = useRef(null);
 
@@ -55,9 +54,8 @@ function ChatBox() {
               </div>
             )}
             <div
-              className={`chat-bubble ${
-                msg.sender === "me" ? "chat-bubble-primary" : ""
-              }`}
+              className={`chat-bubble ${msg.sender === "me" ? "chat-bubble-primary" : ""
+                }`}
             >
               {msg.text}
             </div>
@@ -74,7 +72,7 @@ function ChatBox() {
           className="input input-bordered flex-1 rounded-full"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyDown={() => {}}
+          onKeyDown={() => { }}
         />
         <button
           onClick={sendMessage}
